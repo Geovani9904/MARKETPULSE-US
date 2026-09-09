@@ -1,13 +1,17 @@
-name: Auto-Generate Financial Posts 
+name: Auto-Generate Financial Posts
 
 on:
   schedule:
-    # Corre todos los días a las 12:00 UTC (puedes ajustarlo a tu horario)
+    # Corre todos los días a las 12:00 UTC (08:00 hora de Argentina)
     - cron: '0 12 * * *'
   workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña "Actions" en GitHub
 
+concurrency:
+  group: auto-posts
+  cancel-in-progress: false
+
 jobs:
-  build-and-run:
+  generate-posts:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -20,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run automation script
         env:
@@ -28,4 +32,5 @@ jobs:
           NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}
           NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.NEXT_PUBLIC_SANITY_API_VERSION }}
           SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
-        run: npx tsx generate-posts.ts
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+        run: npm run generate-posts

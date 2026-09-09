@@ -35,6 +35,16 @@ async function fetchAndCreateFinancialPost(): Promise<void> {
 
     const article: NewsArticle = data.articles[0];
 
+    const existing = await client.fetch<{ _id: string } | null>(
+      `*[_type == "post" && title == $title][0] { _id }`,
+      { title: article.title }
+    );
+
+    if (existing) {
+      console.log(`Ya existe el post "${article.title}", se omite.`);
+      return;
+    }
+
     // 1. Extraemos la fuente original de la API (ej: "Reuters", "Bloomberg", etc.)
     const sourceName = article.source?.name || 'External Source';
     
